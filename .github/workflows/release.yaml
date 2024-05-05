@@ -16,7 +16,8 @@ jobs:
     permissions:
       packages: write
       contents: read
-      attestations: write
+      pages: write
+      # attestations: write
     steps:
       - name: Check out the repo
         uses: actions/checkout@v4
