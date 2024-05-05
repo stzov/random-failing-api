@@ -5,6 +5,10 @@ on:
     tags:        
       - '**' 
 
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+      
 jobs:
   push_to_registry:
     name: Push Docker image to Docker Hub
@@ -12,6 +16,8 @@ jobs:
     permissions:
       packages: write
       contents: read
+      pages: write
+      id-token: write
       attestations: write
     steps:
       - name: Check out the repo
@@ -20,16 +26,15 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
         with:
-          name: owner/repository/image
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: my-docker-hub-namespace/my-docker-hub-repository
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
 
       - name: Build and push Docker image
         id: push
@@ -43,7 +48,7 @@ jobs:
       
       
       - name: Generate artifact attestation
-        uses: actions/attest-build-provenance@495f094150e54d72538674c944ca4daf13e7c67d
+        uses: actions/attest-build-provenance@v1
         with:
           subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
           subject-digest: ${{ steps.push.outputs.digest }}
